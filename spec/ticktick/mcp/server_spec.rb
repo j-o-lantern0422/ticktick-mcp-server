@@ -69,6 +69,109 @@ RSpec.describe Ticktick::Mcp::Server do
     end
   end
 
+  describe Ticktick::Mcp::Server::ListAllTasks do
+    let(:projects_body) do
+      [
+        { "id" => "proj_001", "name" => "Work" },
+        { "id" => "proj_002", "name" => "Personal" }
+      ].to_json
+    end
+
+    let(:work_data_body) do
+      {
+        "tasks" => [
+          { "id" => "task_001", "title" => "Fix bug", "status" => 0 },
+          { "id" => "task_002", "title" => "Write docs", "status" => 0 }
+        ]
+      }.to_json
+    end
+
+    let(:personal_data_body) do
+      {
+        "tasks" => [
+          { "id" => "task_003", "title" => "Buy groceries", "status" => 0 }
+        ]
+      }.to_json
+    end
+
+    context "when TICKTICK_ACCESS_TOKEN is not set" do
+      before { ENV.delete("TICKTICK_ACCESS_TOKEN") }
+
+      it "returns an error response" do
+        response = described_class.call
+        expect(response).to be_a(MCP::Tool::Response)
+        content = response.content.first
+        expect(content[:type]).to eq("text")
+        expect(content[:text]).to include("TICKTICK_ACCESS_TOKEN")
+      end
+    end
+
+    context "when authentication succeeds" do
+      before { ENV["TICKTICK_ACCESS_TOKEN"] = "valid_token" }
+      after { ENV.delete("TICKTICK_ACCESS_TOKEN") }
+
+      it "returns all tasks across projects with project_name" do
+        stub_request(:get, "https://api.ticktick.com/open/v1/project")
+          .with(headers: { "Authorization" => "Bearer valid_token" })
+          .to_return(status: 200, body: projects_body)
+
+        stub_request(:get, "https://api.ticktick.com/open/v1/project/proj_001/data")
+          .with(headers: { "Authorization" => "Bearer valid_token" })
+          .to_return(status: 200, body: work_data_body)
+
+        stub_request(:get, "https://api.ticktick.com/open/v1/project/proj_002/data")
+          .with(headers: { "Authorization" => "Bearer valid_token" })
+          .to_return(status: 200, body: personal_data_body)
+
+        response = described_class.call
+        expect(response).to be_a(MCP::Tool::Response)
+
+        tasks = JSON.parse(response.content.first[:text])
+        expect(tasks.length).to eq(3)
+        expect(tasks[0]["project_name"]).to eq("Work")
+        expect(tasks[0]["title"]).to eq("Fix bug")
+        expect(tasks[1]["project_name"]).to eq("Work")
+        expect(tasks[2]["project_name"]).to eq("Personal")
+        expect(tasks[2]["title"]).to eq("Buy groceries")
+      end
+
+      it "skips projects whose data fetch fails" do
+        stub_request(:get, "https://api.ticktick.com/open/v1/project")
+          .with(headers: { "Authorization" => "Bearer valid_token" })
+          .to_return(status: 200, body: projects_body)
+
+        stub_request(:get, "https://api.ticktick.com/open/v1/project/proj_001/data")
+          .with(headers: { "Authorization" => "Bearer valid_token" })
+          .to_return(status: 500, body: "Internal Server Error")
+
+        stub_request(:get, "https://api.ticktick.com/open/v1/project/proj_002/data")
+          .with(headers: { "Authorization" => "Bearer valid_token" })
+          .to_return(status: 200, body: personal_data_body)
+
+        response = described_class.call
+        tasks = JSON.parse(response.content.first[:text])
+        expect(tasks.length).to eq(1)
+        expect(tasks[0]["project_name"]).to eq("Personal")
+      end
+    end
+
+    context "when project list fetch fails" do
+      before { ENV["TICKTICK_ACCESS_TOKEN"] = "invalid_token" }
+      after { ENV.delete("TICKTICK_ACCESS_TOKEN") }
+
+      it "returns an error response" do
+        stub_request(:get, "https://api.ticktick.com/open/v1/project")
+          .with(headers: { "Authorization" => "Bearer invalid_token" })
+          .to_return(status: 401, body: '{"error":"Unauthorized"}')
+
+        response = described_class.call
+        content = response.content.first
+        expect(content[:text]).to include("Failed to fetch projects")
+        expect(content[:text]).to include("401")
+      end
+    end
+  end
+
   describe Ticktick::Mcp::Server::GetProjectData do
     let(:project_data_response_body) do
       {

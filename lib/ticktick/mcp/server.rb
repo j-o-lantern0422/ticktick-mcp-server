@@ -102,11 +102,67 @@ module Ticktick
         end
       end
 
+      class ListAllTasks < MCP::Tool
+        tool_name "list_all_tasks"
+
+        description "List all tasks across all projects from TickTick"
+
+        input_schema(properties: {})
+
+        class << self
+          def call(server_context: nil)
+            token = ENV["TICKTICK_ACCESS_TOKEN"]
+            unless token
+              return MCP::Tool::Response.new(
+                [{ type: "text", text: "Environment variable TICKTICK_ACCESS_TOKEN is not set" }],
+                error: true
+              )
+            end
+
+            conn = Faraday.new(url: TICKTICK_API_BASE) do |f|
+              f.request :authorization, "Bearer", token
+            end
+
+            projects_response = conn.get("project")
+            return fetch_projects_error(projects_response) unless projects_response.success?
+
+            all_tasks = collect_tasks(conn, JSON.parse(projects_response.body))
+            MCP::Tool::Response.new([{ type: "text", text: JSON.pretty_generate(all_tasks) }])
+          rescue StandardError => e
+            MCP::Tool::Response.new(
+              [{ type: "text", text: "API request error: #{e.message}" }],
+              error: true
+            )
+          end
+
+          private
+
+          def fetch_projects_error(response)
+            message = "Failed to fetch projects (HTTP #{response.status}): " \
+                      "#{response.body}"
+            MCP::Tool::Response.new([{ type: "text", text: message }], error: true)
+          end
+
+          def collect_tasks(conn, projects)
+            projects.each_with_object([]) do |project, all_tasks|
+              data_response = conn.get("project/#{project["id"]}/data")
+              next unless data_response.success?
+
+              tasks = JSON.parse(data_response.body)["tasks"] || []
+              tasks.each do |task|
+                task["project_name"] = project["name"]
+                all_tasks << task
+              end
+            end
+          end
+        end
+      end
+
       def self.build
         MCP::Server.new(
           name: "ticktick-mcp-server",
           version: VERSION,
-          tools: [ListProjects, GetProjectData]
+          tools: [ListProjects, GetProjectData, ListAllTasks]
         )
       end
     end
