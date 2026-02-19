@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "ticktick/mcp/server"
+
+server = Ticktick::Mcp::Server.build
+transport = MCP::Server::Transports::StdioTransport.new(server)
+transport.open
