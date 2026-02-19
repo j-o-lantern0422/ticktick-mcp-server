@@ -2,6 +2,7 @@
 
 require "ticktick/mcp/server"
 require "webmock/rspec"
+require_relative "support/shared_contexts"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
