@@ -13,6 +13,7 @@ require_relative "server/tools/task/complete_task"
 require_relative "server/tools/task/delete_task"
 require_relative "server/tools/project/create_project"
 require_relative "server/tools/project/update_project"
+require_relative "server/tools/project/delete_project"
 
 module Ticktick
   module Mcp
@@ -24,7 +25,7 @@ module Ticktick
           name: "ticktick-mcp-server",
           version: VERSION,
           tools: [ListProjects, GetProject, GetProjectData, ListAllTasks,
-                  CreateTask, UpdateTask, CompleteTask, DeleteTask, CreateProject, UpdateProject]
+                  CreateTask, UpdateTask, CompleteTask, DeleteTask, CreateProject, UpdateProject, DeleteProject]
         )
       end
     end

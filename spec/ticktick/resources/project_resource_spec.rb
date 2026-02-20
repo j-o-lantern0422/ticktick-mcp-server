@@ -69,4 +69,13 @@ RSpec.describe Ticktick::Resources::ProjectResource do
       expect(connection).to have_received(:post_json).with("project/proj_001", expected_body)
     end
   end
+
+  describe "#delete" do
+    it "calls connection.delete with project path" do
+      allow(connection).to receive(:delete).with("project/proj_001").and_return(nil)
+      result = resource.delete("proj_001")
+      expect(result).to be_nil
+      expect(connection).to have_received(:delete).with("project/proj_001")
+    end
+  end
 end

@@ -62,6 +62,14 @@ RSpec.describe Ticktick::Client do
     end
   end
 
+  describe "#delete_project" do
+    it "delegates to ProjectResource#delete" do
+      allow(projects).to receive(:delete).with("proj_001").and_return(nil)
+      expect(client.delete_project(project_id: "proj_001")).to be_nil
+      expect(projects).to have_received(:delete).with("proj_001")
+    end
+  end
+
   describe "#delete_task" do
     it "delegates to TaskResource#delete" do
       allow(tasks).to receive(:delete).with("proj_001", "task_001").and_return(nil)

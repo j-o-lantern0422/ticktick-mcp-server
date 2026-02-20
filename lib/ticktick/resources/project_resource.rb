@@ -32,6 +32,10 @@ module Ticktick
         body = { name: name, color: color, sortOrder: sort_order, viewMode: view_mode, kind: kind }.compact
         @connection.post_json("project/#{project_id}", body)
       end
+
+      def delete(project_id)
+        @connection.delete("project/#{project_id}")
+      end
     end
   end
 end
