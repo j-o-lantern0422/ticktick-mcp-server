@@ -15,7 +15,9 @@ Metrics/BlockLength:
     - "spec/**/*_spec.rb"
 
 Metrics/ParameterLists:
-  Enabled: false
-
-Metrics/ClassLength:
-  Max: 120
+  Exclude:
+    - "lib/ticktick/resources/task_attributes.rb"
+    - "lib/ticktick/resources/project_resource.rb"
+    - "lib/ticktick/mcp/server/tools/project/create_project.rb"
+    - "lib/ticktick/mcp/server/tools/project/update_project.rb"
+    - "lib/ticktick/mcp/server/tools/task/create_task.rb"
