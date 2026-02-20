@@ -1,38 +1,101 @@
-# Ticktick::Mcp::Server
+# ticktick-mcp-server
 
-TODO: Delete this and the text below, and describe your gem
+A Ruby gem that exposes the [TickTick Open API](https://developer.ticktick.com/) as an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server. This allows LLMs like Claude to manage your TickTick projects and tasks directly.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/ticktick/mcp/server`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Requirements
+
+- Ruby >= 3.1.0
+- A TickTick account with an Open API access token
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
+Clone the repository and install the gem locally:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+git clone https://github.com/j-o-lantern0422/ticktick-mcp-server
+cd ticktick-mcp-server
+bundle install
+bundle exec rake install
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+## Configuration
 
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Set the following environment variable with your TickTick Open API access token:
+
 ```
+TICKTICK_ACCESS_TOKEN=your_access_token_here
+```
+
+You can obtain an access token from the TickTick Open API developer settings.
 
 ## Usage
 
-TODO: Write usage instructions here
+### Claude Desktop Integration
+
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "ticktick": {
+      "command": "ticktick-mcp-server",
+      "env": {
+        "TICKTICK_ACCESS_TOKEN": "your_access_token_here"
+      }
+    }
+  }
+}
+```
+
+### Running Locally Without Installing the Gem
+
+If you prefer to run the server directly from the cloned repository:
+
+```json
+{
+  "mcpServers": {
+    "ticktick": {
+      "command": "bundle",
+      "args": ["exec", "exe/ticktick-mcp-server"],
+      "cwd": "/path/to/ticktick-mcp-server",
+      "env": {
+        "TICKTICK_ACCESS_TOKEN": "your_access_token_here"
+      }
+    }
+  }
+}
+```
+
+## Available Tools
+
+### Project Management
+
+| Tool | Description | Required Arguments |
+|---|---|---|
+| `list_projects` | List all projects | — |
+| `get_project` | Get a project by ID | `project_id` |
+| `get_project_data` | Get project details including tasks and columns | `project_id` |
+| `create_project` | Create a new project | `name` |
+| `update_project` | Update an existing project | `project_id` |
+| `delete_project` | Delete a project | `project_id` |
+
+### Task Management
+
+| Tool | Description | Required Arguments |
+|---|---|---|
+| `list_all_tasks` | List all tasks across all projects | — |
+| `create_task` | Create a new task | `title`, `project_id` |
+| `update_task` | Update an existing task | `task_id`, `project_id` |
+| `complete_task` | Mark a task as complete | `project_id`, `task_id` |
+| `delete_task` | Delete a task | `project_id`, `task_id` |
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ticktick-mcp-server.
+```bash
+bundle exec rake          # Run tests + RuboCop
+bundle exec rspec         # Run tests only
+bundle exec rubocop       # Run linter only
+```
 
 ## License
 
