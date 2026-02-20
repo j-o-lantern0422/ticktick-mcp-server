@@ -37,6 +37,11 @@ module Ticktick
       handle_response(response)
     end
 
+    def get_project(project_id)
+      response = @connection.get("project/#{project_id}")
+      handle_response(response)
+    end
+
     def get_project_data(project_id)
       response = @connection.get("project/#{project_id}/data")
       handle_response(response)

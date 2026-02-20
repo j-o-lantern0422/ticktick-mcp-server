@@ -32,6 +32,28 @@ RSpec.describe Ticktick::Client do
     end
   end
 
+  describe "#get_project" do
+    subject(:client) { described_class.new(token: "valid_token") }
+
+    it "returns parsed project data" do
+      body = { "id" => "proj_001", "name" => "Work", "color" => "#F18181", "closed" => false }
+      stub_request(:get, "https://api.ticktick.com/open/v1/project/proj_001")
+        .with(headers: { "Authorization" => "Bearer valid_token" })
+        .to_return(status: 200, body: body.to_json, headers: { "Content-Type" => "application/json" })
+
+      result = client.get_project("proj_001")
+      expect(result["name"]).to eq("Work")
+    end
+
+    it "raises ApiError on HTTP 404" do
+      stub_request(:get, "https://api.ticktick.com/open/v1/project/not_exist")
+        .to_return(status: 404, body: '{"error":"Not Found"}')
+
+      expect { client.get_project("not_exist") }
+        .to raise_error(Ticktick::Client::ApiError) { |e| expect(e.status).to eq(404) }
+    end
+  end
+
   describe "#get_project_data" do
     subject(:client) { described_class.new(token: "valid_token") }
 
