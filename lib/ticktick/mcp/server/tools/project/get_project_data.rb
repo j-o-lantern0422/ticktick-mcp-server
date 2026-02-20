@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "mcp"
+require_relative "../../error_handler"
 
 module Ticktick
   module Mcp
@@ -21,17 +22,13 @@ module Ticktick
         )
 
         class << self
+          include ErrorHandler
+
           def call(project_id:, _server_context: nil)
             data = Ticktick::Client.new.get_project_data(project_id)
             MCP::Tool::Response.new([{ type: "text", text: JSON.pretty_generate(data) }])
-          rescue Ticktick::Client::AuthenticationError => e
-            MCP::Tool::Response.new([{ type: "text", text: e.message }], error: true)
-          rescue Ticktick::Client::ApiError => e
-            MCP::Tool::Response.new(
-              [{ type: "text", text: "Authentication failed (HTTP #{e.status}): #{e.body}" }], error: true
-            )
-          rescue StandardError => e
-            MCP::Tool::Response.new([{ type: "text", text: "API request error: #{e.message}" }], error: true)
+          rescue Ticktick::Client::Error, StandardError => e
+            handle_client_error(e)
           end
         end
       end

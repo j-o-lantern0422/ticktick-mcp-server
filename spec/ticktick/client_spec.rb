@@ -61,6 +61,58 @@ RSpec.describe Ticktick::Client do
     end
   end
 
+  describe "rate limit detection" do
+    subject(:client) { described_class.new(token: "valid_token") }
+
+    let(:rate_limit_body) do
+      {
+        "errorId" => "test@server-01",
+        "errorCode" => "exceed_query_limit",
+        "errorMessage" => "Query rate limit exceeded. Maximum 100 requests per minute. Please retry later.",
+        "data" => nil
+      }.to_json
+    end
+
+    it "raises RateLimitError when API returns exceed_query_limit" do
+      stub_request(:get, "https://api.ticktick.com/open/v1/project")
+        .to_return(status: 500, body: rate_limit_body)
+
+      expect { client.list_projects }
+        .to raise_error(Ticktick::Client::RateLimitError) { |e|
+          expect(e.status).to eq(500)
+          expect(e.body).to include("exceed_query_limit")
+        }
+    end
+
+    it "raises RateLimitError on get_project_data" do
+      stub_request(:get, "https://api.ticktick.com/open/v1/project/proj_001/data")
+        .to_return(status: 500, body: rate_limit_body)
+
+      expect { client.get_project_data("proj_001") }
+        .to raise_error(Ticktick::Client::RateLimitError)
+    end
+
+    it "raises plain ApiError for non-rate-limit 500 errors" do
+      stub_request(:get, "https://api.ticktick.com/open/v1/project")
+        .to_return(status: 500, body: '{"errorCode":"internal_error"}')
+
+      expect { client.list_projects }
+        .to raise_error(Ticktick::Client::ApiError) { |e|
+          expect(e).not_to be_a(Ticktick::Client::RateLimitError)
+        }
+    end
+
+    it "raises plain ApiError for non-JSON error responses" do
+      stub_request(:get, "https://api.ticktick.com/open/v1/project")
+        .to_return(status: 500, body: "Internal Server Error")
+
+      expect { client.list_projects }
+        .to raise_error(Ticktick::Client::ApiError) { |e|
+          expect(e).not_to be_a(Ticktick::Client::RateLimitError)
+        }
+    end
+  end
+
   describe "#list_all_tasks" do
     subject(:client) { described_class.new(token: "valid_token") }
 

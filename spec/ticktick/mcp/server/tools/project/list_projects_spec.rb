@@ -27,6 +27,14 @@ RSpec.describe Ticktick::Mcp::Server::ListProjects do
       .and_raise(Ticktick::Client::ApiError.new(status: 401, body: '{"error":"Unauthorized"}'))
 
     content = described_class.call.content.first
-    expect(content[:text]).to include("Authentication failed", "401")
+    expect(content[:text]).to include("API error", "401")
+  end
+
+  it "returns rate limit message when rate limited" do
+    allow(client).to receive(:list_projects)
+      .and_raise(Ticktick::Client::RateLimitError.new(status: 500, body: "exceed_query_limit"))
+
+    response = described_class.call
+    expect(response.content.first[:text]).to include("rate limit", "retry after 1 minute")
   end
 end

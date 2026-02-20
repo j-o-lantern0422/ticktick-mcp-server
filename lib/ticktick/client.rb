@@ -19,7 +19,10 @@ module Ticktick
       end
     end
 
+    class RateLimitError < ApiError; end
+
     API_BASE = "https://api.ticktick.com/open/v1"
+    RATE_LIMIT_ERROR_CODE = "exceed_query_limit"
 
     def initialize(token: ENV["TICKTICK_ACCESS_TOKEN"])
       raise AuthenticationError, "Environment variable TICKTICK_ACCESS_TOKEN is not set" unless token
@@ -58,9 +61,23 @@ module Ticktick
     end
 
     def handle_response(response)
-      raise ApiError.new(status: response.status, body: response.body) unless response.success?
+      unless response.success?
+        raise_rate_limit_error!(response) if rate_limit_error?(response)
+        raise ApiError.new(status: response.status, body: response.body)
+      end
 
       JSON.parse(response.body)
+    end
+
+    def rate_limit_error?(response)
+      parsed = JSON.parse(response.body)
+      parsed["errorCode"] == RATE_LIMIT_ERROR_CODE
+    rescue JSON::ParserError
+      false
+    end
+
+    def raise_rate_limit_error!(response)
+      raise RateLimitError.new(status: response.status, body: response.body)
     end
   end
 end
