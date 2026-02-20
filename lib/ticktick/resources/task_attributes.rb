@@ -4,10 +4,11 @@ module Ticktick
   module Resources
     class TaskAttributes
       # rubocop:disable Metrics/MethodLength
-      def initialize(title:, project_id:, content: nil, desc: nil,
+      def initialize(title:, project_id:, id: nil, content: nil, desc: nil,
                      is_all_day: nil, start_date: nil, due_date: nil,
                      time_zone: nil, reminders: nil, repeat_flag: nil,
                      priority: nil, sort_order: nil, items: nil)
+        @id = id
         @title = title
         @project_id = project_id
         @content = content
@@ -26,7 +27,7 @@ module Ticktick
 
       def to_request_body
         {
-          title: @title, projectId: @project_id, content: @content,
+          id: @id, title: @title, projectId: @project_id, content: @content,
           desc: @desc, isAllDay: @is_all_day, startDate: @start_date,
           dueDate: @due_date, timeZone: @time_zone, reminders: @reminders,
           repeatFlag: @repeat_flag, priority: @priority,

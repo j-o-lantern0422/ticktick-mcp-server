@@ -24,5 +24,13 @@ module Ticktick
     def create_task(title:, project_id:, **opts)
       @tasks.create(Resources::TaskAttributes.new(title: title, project_id: project_id, **opts))
     end
+
+    def update_task(task_id:, project_id:, **opts)
+      @tasks.update(task_id, Resources::TaskAttributes.new(id: task_id, project_id: project_id, **opts))
+    end
+
+    def complete_task(project_id:, task_id:)
+      @tasks.complete(project_id, task_id)
+    end
   end
 end

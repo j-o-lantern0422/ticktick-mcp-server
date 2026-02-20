@@ -78,5 +78,15 @@ RSpec.describe Ticktick::Resources::TaskAttributes do
       attrs = described_class.new(title: "Task", project_id: "proj_001", sort_order: 0)
       expect(attrs.to_request_body[:sortOrder]).to eq(0)
     end
+
+    it "includes id in the body when provided" do
+      attrs = described_class.new(title: "Task", project_id: "proj_001", id: "task_001")
+      expect(attrs.to_request_body[:id]).to eq("task_001")
+    end
+
+    it "omits id from the body when not provided (create_task compatibility)" do
+      attrs = described_class.new(title: "Task", project_id: "proj_001")
+      expect(attrs.to_request_body).not_to have_key(:id)
+    end
   end
 end

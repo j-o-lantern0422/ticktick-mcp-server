@@ -14,6 +14,14 @@ module Ticktick
         @connection.post_json("task", task_attrs.to_request_body)
       end
 
+      def update(task_id, task_attrs)
+        @connection.post_json("task/#{task_id}", task_attrs.to_request_body)
+      end
+
+      def complete(project_id, task_id)
+        @connection.post("project/#{project_id}/task/#{task_id}/complete")
+      end
+
       def list_all
         @projects.list.each_with_object([]) do |project, all_tasks|
           collect_project_tasks(project, all_tasks)

@@ -6,6 +6,34 @@ RSpec.describe Ticktick::Resources::TaskResource do
   let(:connection) { instance_double(Ticktick::HttpConnection) }
   let(:project_resource) { instance_double(Ticktick::Resources::ProjectResource) }
 
+  describe "#complete" do
+    it "calls connection.post with project/{project_id}/task/{task_id}/complete path" do
+      allow(connection).to receive(:post)
+        .with("project/proj_001/task/task_001/complete")
+        .and_return(nil)
+
+      result = resource.complete("proj_001", "task_001")
+      expect(result).to be_nil
+      expect(connection).to have_received(:post).with("project/proj_001/task/task_001/complete")
+    end
+  end
+
+  describe "#update" do
+    it "calls connection.post_json with task/{task_id} path and request body" do
+      task_attrs = instance_double(Ticktick::Resources::TaskAttributes,
+                                   to_request_body: { id: "task_001", title: "Updated", projectId: "proj_001" })
+      updated = { "id" => "task_001", "title" => "Updated" }
+      allow(connection).to receive(:post_json)
+        .with("task/task_001", { id: "task_001", title: "Updated", projectId: "proj_001" })
+        .and_return(updated)
+
+      result = resource.update("task_001", task_attrs)
+      expect(result["id"]).to eq("task_001")
+      expect(connection).to have_received(:post_json)
+        .with("task/task_001", { id: "task_001", title: "Updated", projectId: "proj_001" })
+    end
+  end
+
   describe "#create" do
     it "calls connection.post_json with task path and request body" do
       task_attrs = instance_double(Ticktick::Resources::TaskAttributes,
