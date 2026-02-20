@@ -7,6 +7,9 @@ require_relative "server/tools/project/list_projects"
 require_relative "server/tools/project/get_project"
 require_relative "server/tools/project/get_project_data"
 require_relative "server/tools/task/list_all_tasks"
+require_relative "server/tools/task/create_task"
+require_relative "server/tools/project/create_project"
+require_relative "server/tools/project/update_project"
 
 module Ticktick
   module Mcp
@@ -17,7 +20,7 @@ module Ticktick
         MCP::Server.new(
           name: "ticktick-mcp-server",
           version: VERSION,
-          tools: [ListProjects, GetProject, GetProjectData, ListAllTasks]
+          tools: [ListProjects, GetProject, GetProjectData, ListAllTasks, CreateTask, CreateProject, UpdateProject]
         )
       end
     end
