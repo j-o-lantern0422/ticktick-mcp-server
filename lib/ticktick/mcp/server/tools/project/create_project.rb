@@ -49,7 +49,7 @@ module Ticktick
               kind: kind
             )
             MCP::Tool::Response.new([{ type: "text", text: JSON.pretty_generate(project) }])
-          rescue Ticktick::Client::Error, StandardError => e
+          rescue Ticktick::Errors::Error, StandardError => e
             handle_client_error(e)
           end
         end

@@ -75,7 +75,7 @@ module Ticktick
               priority: priority, sort_order: sort_order, items: items
             )
             MCP::Tool::Response.new([{ type: "text", text: JSON.pretty_generate(task) }])
-          rescue Ticktick::Client::Error, StandardError => e
+          rescue Ticktick::Errors::Error, StandardError => e
             handle_client_error(e)
           end
         end

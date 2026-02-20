@@ -12,11 +12,11 @@ module Ticktick
 
         def handle_client_error(error)
           case error
-          when Ticktick::Client::AuthenticationError
+          when Ticktick::Errors::AuthenticationError
             error_response(error.message)
-          when Ticktick::Client::RateLimitError
+          when Ticktick::Errors::RateLimitError
             error_response(RATE_LIMIT_MESSAGE)
-          when Ticktick::Client::ApiError
+          when Ticktick::Errors::ApiError
             error_response("API error (HTTP #{error.status}): #{error.body}")
           else
             error_response("API request error: #{error.message}")

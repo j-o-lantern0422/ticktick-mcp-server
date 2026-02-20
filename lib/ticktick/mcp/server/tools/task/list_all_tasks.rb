@@ -19,7 +19,7 @@ module Ticktick
           def call(_server_context: nil)
             tasks = Ticktick::Client.new.list_all_tasks
             MCP::Tool::Response.new([{ type: "text", text: JSON.pretty_generate(tasks) }])
-          rescue Ticktick::Client::Error, StandardError => e
+          rescue Ticktick::Errors::Error, StandardError => e
             handle_client_error(e)
           end
         end

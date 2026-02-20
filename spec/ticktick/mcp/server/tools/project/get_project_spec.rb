@@ -22,7 +22,7 @@ RSpec.describe Ticktick::Mcp::Server::GetProject do
 
   it "returns error when token is missing" do
     allow(Ticktick::Client).to receive(:new)
-      .and_raise(Ticktick::Client::AuthenticationError, "Environment variable TICKTICK_ACCESS_TOKEN is not set")
+      .and_raise(Ticktick::Errors::AuthenticationError, "Environment variable TICKTICK_ACCESS_TOKEN is not set")
 
     response = described_class.call(project_id: "proj_001")
     expect(response.content.first[:text]).to include("TICKTICK_ACCESS_TOKEN")
@@ -31,7 +31,7 @@ RSpec.describe Ticktick::Mcp::Server::GetProject do
   it "returns error on API failure" do
     allow(client).to receive(:get_project)
       .with("proj_001")
-      .and_raise(Ticktick::Client::ApiError.new(status: 401, body: '{"error":"Unauthorized"}'))
+      .and_raise(Ticktick::Errors::ApiError.new(status: 401, body: '{"error":"Unauthorized"}'))
 
     content = described_class.call(project_id: "proj_001").content.first
     expect(content[:text]).to include("API error", "401")
@@ -40,7 +40,7 @@ RSpec.describe Ticktick::Mcp::Server::GetProject do
   it "returns rate limit message when rate limited" do
     allow(client).to receive(:get_project)
       .with("proj_001")
-      .and_raise(Ticktick::Client::RateLimitError.new(status: 500, body: "exceed_query_limit"))
+      .and_raise(Ticktick::Errors::RateLimitError.new(status: 500, body: "exceed_query_limit"))
 
     response = described_class.call(project_id: "proj_001")
     expect(response.content.first[:text]).to include("rate limit", "retry after 1 minute")

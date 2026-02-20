@@ -27,7 +27,7 @@ module Ticktick
           def call(project_id:, _server_context: nil)
             data = Ticktick::Client.new.get_project(project_id)
             MCP::Tool::Response.new([{ type: "text", text: JSON.pretty_generate(data) }])
-          rescue Ticktick::Client::Error, StandardError => e
+          rescue Ticktick::Errors::Error, StandardError => e
             handle_client_error(e)
           end
         end
