@@ -21,6 +21,10 @@ module Ticktick
       handle_response(@conn.get(path))
     end
 
+    def post(path)
+      handle_response(@conn.post(path))
+    end
+
     def post_json(path, body)
       response = @conn.post(path) do |req|
         req.headers["Content-Type"] = "application/json"
@@ -36,6 +40,8 @@ module Ticktick
         raise_rate_limit_error!(response) if rate_limit_error?(response)
         raise Errors::ApiError.new(status: response.status, body: response.body)
       end
+
+      return nil if response.body.nil? || response.body.empty?
 
       JSON.parse(response.body)
     end
