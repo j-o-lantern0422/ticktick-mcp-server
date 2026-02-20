@@ -64,6 +64,36 @@ RSpec.describe Ticktick::HttpConnection do
     end
   end
 
+  describe "#delete" do
+    subject(:conn) { described_class.new(token: "valid_token") }
+
+    it "returns nil on 200 with empty body" do
+      stub_request(:delete, "https://api.ticktick.com/open/v1/project/proj_001/task/task_001")
+        .with(headers: { "Authorization" => "Bearer valid_token" })
+        .to_return(status: 200, body: "")
+
+      result = conn.delete("project/proj_001/task/task_001")
+      expect(result).to be_nil
+    end
+
+    it "raises ApiError on HTTP error" do
+      stub_request(:delete, "https://api.ticktick.com/open/v1/project/proj_001/task/task_001")
+        .to_return(status: 404, body: '{"error":"Not Found"}')
+
+      expect { conn.delete("project/proj_001/task/task_001") }
+        .to raise_error(Ticktick::Errors::ApiError) { |e| expect(e.status).to eq(404) }
+    end
+
+    it "raises RateLimitError when rate limited" do
+      rate_limit_body = { "errorCode" => "exceed_query_limit" }.to_json
+      stub_request(:delete, "https://api.ticktick.com/open/v1/project/proj_001/task/task_001")
+        .to_return(status: 500, body: rate_limit_body)
+
+      expect { conn.delete("project/proj_001/task/task_001") }
+        .to raise_error(Ticktick::Errors::RateLimitError)
+    end
+  end
+
   describe "#post_json" do
     subject(:conn) { described_class.new(token: "valid_token") }
 

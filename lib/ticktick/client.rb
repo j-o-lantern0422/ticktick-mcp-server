@@ -32,5 +32,9 @@ module Ticktick
     def complete_task(project_id:, task_id:)
       @tasks.complete(project_id, task_id)
     end
+
+    def delete_task(project_id:, task_id:)
+      @tasks.delete(project_id, task_id)
+    end
   end
 end

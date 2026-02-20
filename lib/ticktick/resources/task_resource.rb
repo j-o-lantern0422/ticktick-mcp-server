@@ -22,6 +22,10 @@ module Ticktick
         @connection.post("project/#{project_id}/task/#{task_id}/complete")
       end
 
+      def delete(project_id, task_id)
+        @connection.delete("project/#{project_id}/task/#{task_id}")
+      end
+
       def list_all
         @projects.list.each_with_object([]) do |project, all_tasks|
           collect_project_tasks(project, all_tasks)

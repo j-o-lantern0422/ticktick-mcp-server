@@ -18,6 +18,18 @@ RSpec.describe Ticktick::Resources::TaskResource do
     end
   end
 
+  describe "#delete" do
+    it "calls connection.delete with project/{project_id}/task/{task_id} path" do
+      allow(connection).to receive(:delete)
+        .with("project/proj_001/task/task_001")
+        .and_return(nil)
+
+      result = resource.delete("proj_001", "task_001")
+      expect(result).to be_nil
+      expect(connection).to have_received(:delete).with("project/proj_001/task/task_001")
+    end
+  end
+
   describe "#update" do
     it "calls connection.post_json with task/{task_id} path and request body" do
       task_attrs = instance_double(Ticktick::Resources::TaskAttributes,

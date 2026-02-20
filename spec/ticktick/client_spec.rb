@@ -54,6 +54,22 @@ RSpec.describe Ticktick::Client do
     end
   end
 
+  describe "#complete_task" do
+    it "delegates to TaskResource#complete" do
+      allow(tasks).to receive(:complete).with("proj_001", "task_001").and_return(nil)
+      expect(client.complete_task(project_id: "proj_001", task_id: "task_001")).to be_nil
+      expect(tasks).to have_received(:complete).with("proj_001", "task_001")
+    end
+  end
+
+  describe "#delete_task" do
+    it "delegates to TaskResource#delete" do
+      allow(tasks).to receive(:delete).with("proj_001", "task_001").and_return(nil)
+      expect(client.delete_task(project_id: "proj_001", task_id: "task_001")).to be_nil
+      expect(tasks).to have_received(:delete).with("proj_001", "task_001")
+    end
+  end
+
   describe "#create_task" do
     it "delegates to TaskResource#create with a TaskAttributes instance" do
       created = { "id" => "task_new", "title" => "Buy milk" }

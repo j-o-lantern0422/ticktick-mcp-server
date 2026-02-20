@@ -25,6 +25,10 @@ module Ticktick
       handle_response(@conn.post(path))
     end
 
+    def delete(path)
+      handle_response(@conn.delete(path))
+    end
+
     def post_json(path, body)
       response = @conn.post(path) do |req|
         req.headers["Content-Type"] = "application/json"
