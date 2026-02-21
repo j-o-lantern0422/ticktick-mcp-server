@@ -4,12 +4,34 @@ A Ruby gem that exposes the [TickTick Open API](https://developer.ticktick.com/)
 
 ## Requirements
 
-- Ruby >= 3.1.0
 - A TickTick account with an Open API access token
+- One of the following:
+  - Docker (recommended — no Ruby required)
+  - Ruby >= 3.1.0
 
 ## Installation
 
-Clone the repository and install the gem locally:
+### Option 1: Docker (recommended)
+
+No Ruby installation required. Pull the pre-built image from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/j-o-lantern0422/ticktick-mcp-server:latest
+```
+
+Or build locally from the repository:
+
+```bash
+docker build -t ticktick-mcp-server https://github.com/j-o-lantern0422/ticktick-mcp-server.git#main
+```
+
+### Option 2: RubyGems
+
+```bash
+gem install ticktick-mcp-server
+```
+
+### Option 3: Clone the repository
 
 ```bash
 git clone https://github.com/j-o-lantern0422/ticktick-mcp-server
@@ -30,7 +52,34 @@ You can obtain an access token from the TickTick Open API developer settings.
 
 ## Usage
 
-### Claude Desktop Integration
+### Running with Docker
+
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "ticktick": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "TICKTICK_ACCESS_TOKEN=your_access_token_here",
+        "ghcr.io/j-o-lantern0422/ticktick-mcp-server:latest"
+      ]
+    }
+  }
+}
+```
+
+> **Note:**
+> - `-i` is required for STDIO communication between Claude Desktop and the MCP server.
+> - Do **not** use `-t` (pseudo-tty). It causes CR/LF conversion that breaks the JSON-RPC protocol.
+> - `--rm` automatically removes the container when the session ends.
+
+### Claude Desktop Integration (gem installed locally)
 
 Add the following to your `claude_desktop_config.json`:
 
