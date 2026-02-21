@@ -1,0 +1,8 @@
+FROM ruby:3.4-alpine
+
+RUN apk add --no-cache build-base ca-certificates tzdata
+
+COPY ticktick-mcp-server-*.gem /tmp/
+RUN gem install /tmp/ticktick-mcp-server-*.gem --no-document
+
+CMD ["ticktick-mcp-server"]

@@ -13,6 +13,7 @@ Style/Documentation:
 Metrics/BlockLength:
   Exclude:
     - "spec/**/*_spec.rb"
+    - "*.gemspec"
 
 Metrics/ParameterLists:
   Exclude:

@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$stdout.sync = true
+
+require "optparse"
+require "ticktick/auth/oauth_flow"
+
+options = {
+  client_id: ENV["TICKTICK_CLIENT_ID"],
+  client_secret: ENV["TICKTICK_CLIENT_SECRET"],
+  port: (ENV["TICKTICK_AUTH_PORT"] || 8585).to_i
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ticktick-auth [options]"
+
+  opts.on("--client-id ID", "TickTick OAuth2 client ID") { |v| options[:client_id] = v }
+  opts.on("--client-secret SECRET", "TickTick OAuth2 client secret") { |v| options[:client_secret] = v }
+  opts.on("--port PORT", Integer, "Callback server port (default: 8585)") { |v| options[:port] = v }
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit 0
+  end
+end.parse!
+
+errors = []
+errors << "client_id is required (--client-id or TICKTICK_CLIENT_ID)" unless options[:client_id]
+errors << "client_secret is required (--client-secret or TICKTICK_CLIENT_SECRET)" unless options[:client_secret]
+
+unless errors.empty?
+  errors.each { |e| warn "Error: #{e}" }
+  exit 1
+end
+
+begin
+  flow = Ticktick::Auth::OauthFlow.new(
+    client_id: options[:client_id],
+    client_secret: options[:client_secret],
+    port: options[:port]
+  )
+  token = flow.run
+  puts "TICKTICK_ACCESS_TOKEN=#{token}"
+rescue Ticktick::Auth::OauthFlow::TimeoutError => e
+  warn "Error: #{e.message}"
+  exit 1
+rescue Ticktick::Auth::OauthFlow::DeniedError => e
+  warn "Error: #{e.message}"
+  exit 1
+rescue Ticktick::Auth::OauthFlow::NetworkError => e
+  warn "Error: #{e.message}"
+  exit 1
+rescue Ticktick::Auth::OauthFlow::Error => e
+  warn "Error: #{e.message}"
+  exit 1
+end
