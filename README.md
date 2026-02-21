@@ -48,7 +48,58 @@ Set the following environment variable with your TickTick Open API access token:
 TICKTICK_ACCESS_TOKEN=your_access_token_here
 ```
 
-You can obtain an access token from the TickTick Open API developer settings.
+### Getting an Access Token
+
+Use the built-in `ticktick-auth` tool to obtain a token via OAuth2.
+
+#### Step 1: Register your application
+
+Go to the [TickTick Developer Center](https://developer.ticktick.com/) and create an OAuth2 application.
+Set the redirect URI to:
+
+```
+http://localhost:8585/callback
+```
+
+#### Step 2: Run the authentication tool
+
+**With Docker:**
+
+```bash
+docker run --rm -p 8585:8585 ghcr.io/j-o-lantern0422/ticktick-mcp-server:latest \
+  ticktick-auth --client-id=YOUR_CLIENT_ID --client-secret=YOUR_CLIENT_SECRET
+```
+
+**With the gem installed locally:**
+
+```bash
+ticktick-auth --client-id=YOUR_CLIENT_ID --client-secret=YOUR_CLIENT_SECRET
+```
+
+You can also pass credentials via environment variables instead of flags:
+
+```bash
+export TICKTICK_CLIENT_ID=YOUR_CLIENT_ID
+export TICKTICK_CLIENT_SECRET=YOUR_CLIENT_SECRET
+ticktick-auth
+```
+
+> **Note:** The default callback port is `8585`. Use `--port PORT` (or `TICKTICK_AUTH_PORT`) to change it.
+> If you change the port, update the redirect URI in the developer settings accordingly.
+
+#### Step 3: Authorize in the browser
+
+The tool will print an authorization URL. Open it in your browser and approve the request.
+
+#### Step 4: Copy the token
+
+After authorization, the token is printed to stdout:
+
+```
+TICKTICK_ACCESS_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Copy this value and use it as your `TICKTICK_ACCESS_TOKEN`.
 
 ## Usage
 
